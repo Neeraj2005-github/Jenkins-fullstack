@@ -1,24 +1,17 @@
-import React, { Component } from 'react';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
-import { FaRegClock } from 'react-icons/fa';
-import './AppointmentBooking.css';
+import React, { Component } from "react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { FaRegClock } from "react-icons/fa";
+import "./AppointmentBooking.css";
 
-// Correct BASEURL for your backend
 const BASEURL = "http://localhost:2030/Appointmentbackend/";
 
 // Fetch doctors
 async function fetchDoctors(callback) {
   try {
     const res = await fetch(`${BASEURL}doctors/list`);
-    const text = await res.text();
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch {
-      callback({ status: "error", message: "Invalid JSON from server" });
-      return;
-    }
+    if (!res.ok) throw new Error(`${res.status}::${res.statusText}`);
+    const data = await res.json();
     callback({ status: "success", data });
   } catch (err) {
     callback({ status: "error", message: err.message });
@@ -35,52 +28,51 @@ async function bookAppointment(appointmentData, callback) {
     });
     const text = await res.text();
     let data;
-    try {
-      data = JSON.parse(text);
-    } catch {
-      data = { status: "success", message: text };
-    }
+    try { data = JSON.parse(text); } catch { data = { status: "success", message: text }; }
     callback(data);
   } catch (err) {
     callback({ status: "error", message: err.message });
   }
 }
 
-// Custom time picker input
+// Custom time input for DatePicker
 const CustomTimeInput = React.forwardRef(({ value, onClick }, ref) => (
-  <button type="button" className="custom-time-input" onClick={onClick} ref={ref} style={{ display: 'flex', alignItems: 'center', width: '100%', background: 'white', border: '1px solid #b3c6e0', borderRadius: 6, padding: '10px 12px', color: '#111', fontSize: '1rem' }}>
-    <FaRegClock style={{ marginRight: 8 }} /> {value || 'Select time'}
+  <button
+    type="button"
+    className="custom-time-input"
+    onClick={onClick}
+    ref={ref}
+    style={{ display: 'flex', alignItems: 'center', width: '100%', background: 'white', border: '1px solid #b3c6e0', borderRadius: 6, padding: '10px 12px', color: '#111', fontSize: '1rem' }}
+  >
+    <FaRegClock style={{ marginRight: 8 }} />
+    {value || "Select time"}
   </button>
 ));
 
 class BookAppointment extends Component {
   state = {
-    fullName: '',
-    phone: '',
-    appointmentDate: null,
-    appointmentTime: null,
-    department: '',
+    fullName: "",
+    phone: "",
+    department: "",
     doctors: [],
     selectedDoctor: null,
+    appointmentDate: null,
+    appointmentTime: null,
     loading: false,
     error: null,
-    success: false
+    success: false,
   };
 
   componentDidMount() {
     fetchDoctors((res) => {
-      if (res.status === "success") {
-        this.setState({ doctors: res.data });
-      } else {
-        this.setState({ error: res.message });
-      }
+      if (res.status === "success") this.setState({ doctors: res.data });
+      else this.setState({ error: res.message });
     });
   }
 
   getAvailableDoctor = (department) => {
-    return this.state.doctors.find(doc =>
-      doc.department?.toLowerCase() === department.toLowerCase() &&
-      doc.status?.toLowerCase() === "available"
+    return this.state.doctors.find(
+      (doc) => doc.department?.toLowerCase() === department.toLowerCase() && doc.status?.toLowerCase() === "available"
     );
   };
 
@@ -91,7 +83,7 @@ class BookAppointment extends Component {
       this.setState({
         department: value,
         selectedDoctor: doctor,
-        error: doctor ? null : "No doctor available in this department."
+        error: doctor ? null : "No doctor available in this department.",
       });
     } else {
       this.setState({ [name]: value });
@@ -117,19 +109,20 @@ class BookAppointment extends Component {
     const { fullName, phone, appointmentDate, appointmentTime, department, selectedDoctor } = this.state;
     if (!selectedDoctor) return this.setState({ error: "No doctor available for this department." });
 
-    const formattedDate = appointmentDate?.toISOString().split('T')[0] || '';
-    const formattedTime = appointmentTime instanceof Date
-      ? appointmentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      : appointmentTime || '';
+    const formattedDate = appointmentDate.toISOString().split("T")[0];
+    const formattedTime =
+      appointmentTime instanceof Date
+        ? appointmentTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+        : appointmentTime;
 
     const appointmentData = {
       fullName: fullName.trim(),
       phone: phone.trim(),
+      department,
       appointmentDate: formattedDate,
       appointmentTime: formattedTime,
-      department,
       status: "Scheduled",
-      doctor: { id: selectedDoctor.id }
+      doctor: { id: selectedDoctor.id },
     };
 
     this.setState({ loading: true, error: null });
@@ -137,7 +130,15 @@ class BookAppointment extends Component {
     bookAppointment(appointmentData, (response) => {
       this.setState({ loading: false });
       if (response.status === "success") {
-        this.setState({ success: true, fullName: "", phone: "", appointmentDate: null, appointmentTime: null, department: "", selectedDoctor: null });
+        this.setState({
+          success: true,
+          fullName: "",
+          phone: "",
+          department: "",
+          selectedDoctor: null,
+          appointmentDate: null,
+          appointmentTime: null,
+        });
         setTimeout(() => (window.location.href = "/Appointmentfrontend/my-appointments"), 2000);
       } else {
         this.setState({ error: response.message || "Failed to book appointment." });
@@ -146,8 +147,7 @@ class BookAppointment extends Component {
   };
 
   render() {
-    const { fullName, phone, appointmentDate, appointmentTime, department, selectedDoctor, loading, error, success } = this.state;
-
+    const { fullName, phone, department, selectedDoctor, appointmentDate, appointmentTime, loading, error, success } = this.state;
     return (
       <div className="appointment-container">
         <form className="appointment-form" onSubmit={this.handleSubmit}>
@@ -180,19 +180,15 @@ class BookAppointment extends Component {
           <div className="form-row">
             <div className="form-group">
               <label>Date *</label>
-              <DatePicker selected={appointmentDate} onChange={this.handleDateChange} minDate={new Date()} dateFormat="yyyy-MM-dd" placeholderText="Select date" required className="datepicker-input" />
+              <DatePicker selected={appointmentDate} onChange={this.handleDateChange} minDate={new Date()} dateFormat="yyyy-MM-dd" placeholderText="Select date" required />
             </div>
             <div className="form-group">
               <label>Time *</label>
-              <DatePicker selected={appointmentTime} onChange={this.handleTimeChange} showTimeSelect showTimeSelectOnly timeIntervals={15} timeCaption="Time" dateFormat="HH:mm" placeholderText="Select time" required className="datepicker-input" customInput={<CustomTimeInput />} />
+              <DatePicker selected={appointmentTime} onChange={this.handleTimeChange} showTimeSelect showTimeSelectOnly timeIntervals={15} timeCaption="Time" dateFormat="HH:mm" placeholderText="Select time" required customInput={<CustomTimeInput />} />
             </div>
           </div>
 
-          {selectedDoctor && (
-            <div className="doctor-info">
-              Assigned Doctor: Dr. {selectedDoctor.fullName || selectedDoctor.name} ({selectedDoctor.department})
-            </div>
-          )}
+          {selectedDoctor && <div className="doctor-info">Assigned Doctor: Dr. {selectedDoctor.fullName || selectedDoctor.name} ({selectedDoctor.department})</div>}
 
           <button type="submit" className="submit-button" disabled={loading || !selectedDoctor}>
             {loading ? "Booking..." : "Book Appointment"}
