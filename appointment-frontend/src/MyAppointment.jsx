@@ -1,5 +1,44 @@
 import React, { Component } from "react";
-import { fetchAppointments, deleteAppointment } from "./api";
+// API functions moved from api.js
+const BASEURL = "http://localhost:8057/";
+
+/**
+ * Fetch all appointments
+ * @param {function} callback - function to handle response
+ */
+async function fetchAppointments(callback) {
+  try {
+    const res = await fetch(`${BASEURL}appointments/list`);
+    if (!res.ok) throw new Error(`${res.status}::${res.statusText}`);
+
+    const data = await res.json();
+    callback({ status: "success", data });
+  } catch (err) {
+    console.error("Error fetching appointments:", err.message);
+    callback({ status: "error", message: err.message });
+  }
+}
+
+/**
+ * Delete an appointment by ID
+ * @param {number} id - appointment id
+ * @param {function} callback - response handler
+ */
+async function deleteAppointment(id, callback) {
+  try {
+    const res = await fetch(`${BASEURL}appointments/${id}`, {
+      method: "DELETE",
+    });
+
+    if (!res.ok) throw new Error(`${res.status}::${res.statusText}`);
+
+    const data = await res.json();
+    callback(data);
+  } catch (err) {
+    console.error("Error deleting appointment:", err.message);
+    callback({ status: "error", message: err.message });
+  }
+}
 import "./AppointmentBooking.css";
 
 class MyAppointments extends Component {
