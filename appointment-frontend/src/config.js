@@ -1,6 +1,6 @@
 // config.js
 const config = {
-  BASEURL: "http://localhost:8057/Appointmentbackend/"
+  BASEURL: "http://localhost:2030/Appointmentbackend/"
 };
 
 export default config;
