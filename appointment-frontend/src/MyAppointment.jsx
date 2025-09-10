@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 // API functions moved from api.js
-const BASEURL = "http://localhost:8057/";
+const BASEURL = "http://localhost:2030/Appointmentbackend/";
 
 /**
  * Fetch all appointments

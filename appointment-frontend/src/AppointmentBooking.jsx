@@ -4,7 +4,8 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { FaRegClock } from 'react-icons/fa';
 // API functions moved from api.js
-const BASEURL = "http://localhost:8057/";
+const BASEURL = "http://localhost:2030/Appointmentbackend/";
+
 
 /**
  * Fetch all available doctors
