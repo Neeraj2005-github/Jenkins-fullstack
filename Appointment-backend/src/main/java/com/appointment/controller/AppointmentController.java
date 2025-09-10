@@ -8,7 +8,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/appointments")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "*")
 public class AppointmentController {
     private final AppointmentService appointmentService;
 
