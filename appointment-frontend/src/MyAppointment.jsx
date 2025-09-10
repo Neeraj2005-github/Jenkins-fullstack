@@ -1,60 +1,40 @@
 import React, { Component } from "react";
-// API functions moved from api.js
+import "./AppointmentBooking.css";
+
 const BASEURL = "http://localhost:2030/Appointmentbackend/";
 
-/**
- * Fetch all appointments
- * @param {function} callback - function to handle response
- */
+// Fetch all appointments
 async function fetchAppointments(callback) {
   try {
     const res = await fetch(`${BASEURL}appointments/list`);
     if (!res.ok) throw new Error(`${res.status}::${res.statusText}`);
-
     const data = await res.json();
     callback({ status: "success", data });
   } catch (err) {
-    console.error("Error fetching appointments:", err.message);
     callback({ status: "error", message: err.message });
   }
 }
 
-/**
- * Delete an appointment by ID
- * @param {number} id - appointment id
- * @param {function} callback - response handler
- */
+// Delete appointment
 async function deleteAppointment(id, callback) {
   try {
-    const res = await fetch(`${BASEURL}appointments/${id}`, {
-      method: "DELETE",
-    });
-
-    if (!res.ok) throw new Error(`${res.status}::${res.statusText}`);
-
-    const data = await res.json();
+    const res = await fetch(`${BASEURL}appointments/${id}`, { method: "DELETE" });
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch { data = { status: "success", message: text }; }
     callback(data);
   } catch (err) {
-    console.error("Error deleting appointment:", err.message);
     callback({ status: "error", message: err.message });
   }
 }
-import "./AppointmentBooking.css";
 
 class MyAppointments extends Component {
-  state = {
-    appointments: [],
-    loading: true,
-    error: null,
-  };
+  state = { appointments: [], loading: true, error: null };
 
   componentDidMount() {
     fetchAppointments((res) => {
-      if (res.status === "success") {
-        this.setState({ appointments: res.data, loading: false });
-      } else {
-        this.setState({ error: res.message, loading: false });
-      }
+      if (res.status === "success") this.setState({ appointments: res.data, loading: false });
+      else this.setState({ error: res.message, loading: false });
     });
   }
 
@@ -64,17 +44,14 @@ class MyAppointments extends Component {
       if (res.status === "success") {
         this.setState((prev) => ({
           appointments: prev.appointments.filter((appt) => appt.id !== id),
-          error: null
+          error: null,
         }));
-      } else {
-        this.setState({ error: res.message });
-      }
+      } else this.setState({ error: res.message });
     });
   };
 
   render() {
     const { appointments, loading, error } = this.state;
-
     if (loading) return <div className="appointment-container"><p>Loading...</p></div>;
     if (error) return <div className="appointment-container"><div className="error-message">{error}</div></div>;
 
@@ -88,8 +65,8 @@ class MyAppointments extends Component {
             <ul className="appointment-list">
               {appointments.map((appt) => (
                 <li key={appt.id} className="appointment-item">
-                  <strong>{appt.fullName}</strong> - {appt.department}<br />
-                  Date: {appt.appointmentDate}, Time: {appt.appointmentTime}<br />
+                  <strong>{appt.fullName}</strong> - {appt.department}<br/>
+                  Date: {appt.appointmentDate}, Time: {appt.appointmentTime}<br/>
                   Doctor: {appt.doctor?.fullName || "N/A"}
                   <button
                     className="remove-appointment-btn"
