@@ -25,7 +25,8 @@ public class AppointmentService {
                     .orElseThrow(() -> new RuntimeException("Doctor not found"));
             appointment.setDoctor(doctor);
         }
-        return appointmentRepository.save(appointment);
+        return appointmentRepository.saveAndFlush(appointment);
+
     }
 
     public List<Appointment> getAllAppointments() {

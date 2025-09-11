@@ -24,7 +24,7 @@ public class DoctorService {
     }
 
     public Doctor saveDoctor(Doctor doctor) {
-        return doctorRepository.save(doctor);
+return doctorRepository.saveAndFlush(doctor);
     }
 
     public void deleteDoctor(Long id) {
